@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Official Weekly Survival Meter</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { min-height: 100vh; }
+
+body {
+  font-family: 'Space Mono', 'Courier New', monospace;
+  background-color: #f5f0e8;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(0,180,180,0.07) 28px, rgba(0,180,180,0.07) 29px),
+    repeating-linear-gradient(90deg, transparent, transparent 28px, rgba(0,180,180,0.07) 28px, rgba(0,180,180,0.07) 29px);
+  padding: 32px 16px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.container {
+  max-width: 680px;
+  width: 100%;
+}
+
+.panel {
+  background: #faf6ee;
+  border: 4px solid #1a1a2e;
+  box-shadow: 8px 8px 0 #1a1a2e;
+  overflow: visible;
+}
+
+/* Titlebar */
+.titlebar {
+  background: #009b8d;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 4px solid #1a1a2e;
+}
+.titlebar-title {
+  color: #faf6ee;
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+.xp-dots { display: flex; gap: 8px; }
+.xp-dot { width: 16px; height: 16px; border: 2px solid #1a1a2e; }
+.xp-dot.red    { background: #e8452a; }
+.xp-dot.yellow { background: #f5c518; }
+.xp-dot.green  { background: #2ecc71; }
+
+/* Header */
+.header {
+  padding: 24px 28px 20px;
+  border-bottom: 4px solid #1a1a2e;
+  background: #faf6ee;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆';
+  position: absolute;
+  bottom: 8px;
+  left: 0; right: 0;
+  font-size: 9px;
+  color: rgba(0,155,141,0.2);
+  letter-spacing: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.header h1 {
+  font-family: 'VT323', monospace;
+  font-size: 34px;
+  color: #1a1a2e;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.header .subtitle {
+  font-size: 11px;
+  color: #009b8d;
+  margin-top: 5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.version-badge {
+  display: inline-block;
+  margin-top: 10px;
+  background: #e8452a;
+  border: 2px solid #1a1a2e;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #faf6ee;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 #1a1a2e;
+}
+
+/* Clock */
+.clock-bar {
+  background: #1a1a2e;
+  padding: 10px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 4px solid #1a1a2e;
+}
+.clock {
+  font-family: 'VT323', monospace;
+  font-size: 32px;
+  color: #f5c518;
+  letter-spacing: 3px;
+}
+.day-label {
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  color: #009b8d;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* Sections */
+.section {
+  padding: 24px 28px;
+  border-bottom: 3px solid #1a1a2e;
+}
+.section:last-of-type { border-bottom: none; }
+
+.section-title {
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-title .dot {
+  width: 12px; height: 12px;
+  border: 2px solid #1a1a2e;
+  flex-shrink: 0;
+}
+
+.sec-teal   { background: #eaf7f7; }
+.sec-teal   .section-title { color: #006e64; }
+.sec-teal   .section-title .dot { background: #009b8d; }
+
+.sec-yellow { background: #fff8e6; }
+.sec-yellow .section-title { color: #8a5a00; }
+.sec-yellow .section-title .dot { background: #f5c518; }
+
+/* Progress bar */
+.progress-wrap {
+  border: 3px solid #1a1a2e;
+  background: #fff;
+  height: 44px;
+  position: relative;
+  box-shadow: 4px 4px 0 #1a1a2e;
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  transition: width 0.8s cubic-bezier(.4,0,.2,1);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  min-width: 0;
+}
+.progress-fill.day-fill {
+  background: repeating-linear-gradient(
+    45deg,
+    #009b8d,
+    #009b8d 10px,
+    #00b5a5 10px,
+    #00b5a5 20px
+  );
+}
+.progress-fill.week-fill {
+  background: repeating-linear-gradient(
+    45deg,
+    #e8452a,
+    #e8452a 10px,
+    #f05a3d 10px,
+    #f05a3d 20px
+  );
+}
+.progress-pct {
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  color: #faf6ee;
+  font-weight: 400;
+  text-shadow: 1px 1px 0 rgba(0,0,0,0.4);
+  white-space: nowrap;
+}
+.progress-pct.outside {
+  position: absolute;
+  left: 8px;
+  color: #1a1a2e;
+  text-shadow: none;
+}
+
+.progress-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 6px;
+  font-size: 10px;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.time-remaining {
+  margin-top: 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #1a1a2e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.time-remaining span {
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  color: #009b8d;
+}
+
+/* Phrase box */
+.phrase-box {
+  margin-top: 0;
+  background: #1a1a2e;
+  border: 3px solid #1a1a2e;
+  padding: 18px 24px;
+  position: relative;
+  box-shadow: 5px 5px 0 #009b8d;
+}
+.phrase-label {
+  font-size: 9px;
+  color: #009b8d;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+.phrase-text {
+  font-family: 'VT323', monospace;
+  font-size: 24px;
+  color: #f5c518;
+  line-height: 1.3;
+  letter-spacing: 1px;
+}
+
+/* Weekend msg */
+.weekend-box {
+  background: #7b4fd4;
+  border: 3px solid #1a1a2e;
+  padding: 22px 24px;
+  text-align: center;
+  box-shadow: 5px 5px 0 #1a1a2e;
+  display: none;
+}
+.weekend-box .wk-title {
+  font-family: 'VT323', monospace;
+  font-size: 48px;
+  color: #faf6ee;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+.weekend-box .wk-sub {
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  color: #f5c518;
+  margin-top: 6px;
+  letter-spacing: 1px;
+}
+
+/* Outside hours */
+.outside-box {
+  background: #fdf0ee;
+  border: 3px solid #e8452a;
+  padding: 14px 20px;
+  text-align: center;
+  box-shadow: 4px 4px 0 #1a1a2e;
+  display: none;
+}
+.outside-box p {
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  color: #e8452a;
+  letter-spacing: 1px;
+}
+
+/* Shimmer */
+.shimmer-line {
+  height: 6px;
+  background: repeating-linear-gradient(90deg,
+    #009b8d 0px, #009b8d 12px,
+    #f5c518 12px, #f5c518 24px,
+    #e8452a 24px, #e8452a 36px,
+    #7b4fd4 36px, #7b4fd4 48px);
+  border: none;
+  margin: 0;
+}
+
+/* Footer */
+.footer-bar {
+  background: #1a1a2e;
+  padding: 14px 28px;
+  text-align: center;
+  border-top: 4px solid #1a1a2e;
+}
+.footer-bar .credits {
+  font-size: 12px;
+  color: #009b8d;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.footer-bar .credits b { color: #f5c518; }
+.footer-bar .meta {
+  font-size: 10px;
+  color: #556;
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+
+.footer-outer {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 10px;
+  color: #999;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="panel">
+
+    <!-- Titlebar -->
+    <div class="titlebar">
+      <span class="titlebar-title">📊 THE OFFICIAL WEEKLY SURVIVAL METER</span>
+      <div class="xp-dots">
+        <span class="xp-dot yellow"></span>
+        <span class="xp-dot green"></span>
+        <span class="xp-dot red"></span>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+      <h1>The Official Weekly<br>Survival Meter</h1>
+      <p class="subtitle">Quanto manca alla libertà?</p>
+      <span class="version-badge">⚡ v1.0 — 10/07/2026</span>
+    </div>
+
+    <!-- Clock -->
+    <div class="clock-bar">
+      <span class="clock" id="clock">--:--:--</span>
+      <span class="day-label" id="day-label">---</span>
+    </div>
+
+    <hr class="shimmer-line">
+
+    <!-- Weekend message (hidden during week) -->
+    <div class="weekend-box" id="weekend-box">
+      <div class="wk-title">🎉 WEEKEND! 🎉</div>
+      <div class="wk-sub">Sei sopravvissuto. Ricarica le batterie.</div>
+    </div>
+
+    <!-- Day progress -->
+    <div class="section sec-teal" id="section-day">
+      <div class="section-title"><span class="dot"></span>Sopravvivenza giornaliera</div>
+      <div class="outside-box" id="outside-box">
+        <p id="outside-msg">⏰ Non sei in orario lavorativo. Goditi la libertà!</p>
+      </div>
+      <div id="day-content">
+        <div class="progress-wrap">
+          <div class="progress-fill day-fill" id="day-fill" style="width:0%">
+            <span class="progress-pct" id="day-pct-in">0%</span>
+          </div>
+          <span class="progress-pct outside" id="day-pct-out" style="display:none">0%</span>
+        </div>
+        <div class="progress-labels">
+          <span>08:00</span>
+          <span>PAUSA 12-13</span>
+          <span>17:00</span>
+        </div>
+        <div class="time-remaining" id="day-remaining">Mancano <span id="day-time-left">--h --m</span> alla fine</div>
+      </div>
+    </div>
+
+    <!-- Week progress -->
+    <div class="section sec-yellow" id="section-week">
+      <div class="section-title"><span class="dot"></span>Sopravvivenza settimanale</div>
+      <div class="progress-wrap">
+        <div class="progress-fill week-fill" id="week-fill" style="width:0%">
+          <span class="progress-pct" id="week-pct-in">0%</span>
+        </div>
+        <span class="progress-pct outside" id="week-pct-out" style="display:none">0%</span>
+      </div>
+      <div class="progress-labels">
+        <span>LUN 08:00</span>
+        <span></span>
+        <span>VEN 17:00</span>
+      </div>
+      <div class="time-remaining" id="week-remaining">Mancano <span id="week-time-left">--h --m</span> alla fine della settimana</div>
+    </div>
+
+    <!-- Phrase -->
+    <div class="section" style="background:#faf6ee; border-bottom:3px solid #1a1a2e; padding:20px 28px;">
+      <div class="phrase-box">
+        <div class="phrase-label">// messaggio del sistema //</div>
+        <div class="phrase-text" id="phrase-text">Caricamento motivazione...</div>
+        <a href="https://www.youtube.com/watch?v=qT5PknGDbSc&list=RDqT5PknGDbSc&start_radio=1" target="_blank" id="music-link" style="display:none;margin-top:12px;background:#f5c518;border:2px solid #faf6ee;padding:6px 14px;font-family:'VT323',monospace;font-size:20px;color:#1a1a2e;text-decoration:none;letter-spacing:1px;text-transform:uppercase;box-shadow:3px 3px 0 #faf6ee;display:inline-block;">▶ ASCOLTA ORA</a>
+      </div>
+    </div>
+
+    <hr class="shimmer-line">
+
+    <!-- Footer -->
+    <div class="footer-bar">
+      <div class="credits">Scritto da <b>Garo</b> con <b>Claude</b> 🤖✨</div>
+      <div class="meta">The Official Weekly Survival Meter · v1.0 · 10/07/2026</div>
+    </div>
+
+  </div>
+  <div class="footer-outer">Survival rate: calculating...</div>
+</div>
+
+<script>
+const GIORNI = ['Domenica','Lunedì','Martedì','Mercoledì','Giovedì','Venerdì','Sabato'];
+
+// Frasi per fascia di completamento
+const FRASI = {
+  weekend: [
+    "Il campo di battaglia è deserto. Sei al sicuro.",
+    "Sabato e domenica: il nemico non lavora. Nemmeno tu.",
+    "Weekend detected. Disconnettersi dal sistema aziendale.",
+    "Stai respirando aria libera. Assaporala.",
+  ],
+  before: [
+    "Il turno non è ancora iniziato. Dormi finché puoi.",
+    "Pre-lavoro rilevato. Goditi il caffè senza sensi di colpa.",
+    "La giornata non è ancora cominciata. Sei ancora innocente.",
+  ],
+  after: [
+    "Hai completato la missione giornaliera. Ritirati in modo ordinato.",
+    "Orario terminato. Il badge può andare a dormire.",
+    "Sei ufficialmente fuori pericolo per oggi.",
+  ],
+  low: [ // 0-25%
+    "La giornata è appena iniziata. Il caffè è l'unica speranza.",
+    "0-25%: stai ancora accendendo il PC. Coraggio.",
+    "Modalità sopravvivenza attivata. Resistenza: minima.",
+    "Sei entrato nell'arena. Che il karma sia con te.",
+    "Il lunedì ha colpito ancora. Non sei solo.",
+  ],
+  mid: [ // 25-50%
+    "A metà strada. Il peggio deve ancora venire — o è già passato?",
+    "25-50%: la pausa caffè è l'unico punto di luce.",
+    "Stai resistendo. Medaglia di bronzo alla sopravvivenza.",
+    "Siamo nel mezzo. Come il Signore degli Anelli, ma meno epico.",
+    "Il pomeriggio bussa alla porta. Aprire o ignorare?",
+  ],
+  high: [ // 50-80%
+    "Più della metà fatta! Discesa verso la libertà.",
+    "50-80%: inizi a vedere la luce in fondo al corridoio.",
+    "La resistenza sta cedendo, ma in senso buono.",
+    "Ce la stai facendo. Il venerdì è un concetto reale.",
+    "Modalità finale attivata. Tieni duro.",
+  ],
+  almost: [ // 80-99%
+    "Quasi fatta! Non mollare ora, sei quasi libero.",
+    "80-99%: il finish line è visibile ad occhio nudo.",
+    "Ultimo sprint! Il divano ti aspetta.",
+    "La libertà è a portata di mouse. Un altro click e sei fuori.",
+    "ALERT: sopravvivenza quasi completata. Preparare zaino.",
+  ],
+  friday_afternoon: [
+    "È VENERDÌ POMERIGGIO. C'è solo una cosa da fare.",
+    "Il sistema raccomanda musica ad alto volume. Immediatamente.",
+    "VENERDÌ 16:00+: protocollo festivo attivato. Metti su qualcosa.",
+    "La settimana è quasi finita. Meriti una colonna sonora epica.",
+  ],
+  done: [
+    "MISSIONE COMPLETATA. Ritirati con dignità.",
+    "100%! Sei sopravvissuto. Darwin era ottimista.",
+    "Fine della settimana lavorativa. Il sistema si è arreso.",
+    "Obiettivo raggiunto. Ora puoi esistere liberamente.",
+  ],
+  venerdi_pm: [
+    "🎵 VENERDÌ POMERIGGIO RILEVATO. È l'ora della colonna sonora ufficiale.",
+  ],
+  pausa: [
+    "PAUSA PRANZO: ricarica i sistemi. È un ordine.",
+    "Intermezzo gastronomico. Il lavoro può aspettare (deve).",
+    "12:00-13:00: zona protetta. Vietato parlare di lavoro.",
+    "Pausa rilevata. Mangia qualcosa di decente per una volta.",
+  ]
+};
+
+function randomFrase(arr) {
+  return arr[Math.floor(Math.random() * arr.length)];
+}
+
+// Minuti lavorativi in un giorno (8-12 + 13-17 = 8h = 480 min)
+const MIN_GIORNO = 480;
+// Minuti lavorativi in una settimana (5 giorni * 480 = 2400 min)
+const MIN_SETTIMANA = 2400;
+
+function minLavorativiGiorno(h, m) {
+  const tot = h * 60 + m;
+  if (tot < 8 * 60) return 0;
+  if (tot < 12 * 60) return tot - 8 * 60;
+  if (tot < 13 * 60) return 4 * 60; // pausa
+  if (tot < 17 * 60) return 4 * 60 + (tot - 13 * 60);
+  return 8 * 60;
+}
+
+function inPausa(h, m) {
+  const tot = h * 60 + m;
+  return tot >= 12 * 60 && tot < 13 * 60;
+}
+
+function isOrarioLavoro(h, m) {
+  const tot = h * 60 + m;
+  return (tot >= 8 * 60 && tot < 12 * 60) || (tot >= 13 * 60 && tot < 17 * 60);
+}
+
+function pad2(n) { return String(n).padStart(2, '0'); }
+
+function formatDurata(min) {
+  if (min <= 0) return '0h 0m';
+  const h = Math.floor(min / 60);
+  const m = min % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
+}
+
+function setPct(fillId, pctInId, pctOutId, pct) {
+  const fill = document.getElementById(fillId);
+  const pctIn = document.getElementById(pctInId);
+  const pctOut = document.getElementById(pctOutId);
+  fill.style.width = pct + '%';
+  const label = Math.round(pct) + '%';
+  if (pct > 15) {
+    pctIn.textContent = label;
+    pctIn.style.display = 'block';
+    pctOut.style.display = 'none';
+  } else {
+    pctIn.style.display = 'none';
+    pctOut.style.display = 'block';
+    pctOut.textContent = label;
+  }
+}
+
+let lastPhraseBucket = null;
+
+function update() {
+  const now = new Date();
+  const dow = now.getDay(); // 0=dom, 6=sab
+  const h = now.getHours();
+  const m = now.getMinutes();
+  const s = now.getSeconds();
+  const dayName = GIORNI[dow];
+
+  // Clock
+  document.getElementById('clock').textContent = `${pad2(h)}:${pad2(m)}:${pad2(s)}`;
+  document.getElementById('day-label').textContent = dayName.toUpperCase();
+
+  const isWeekend = dow === 0 || dow === 6;
+  const weekendBox = document.getElementById('weekend-box');
+  const sectionDay = document.getElementById('section-day');
+  const sectionWeek = document.getElementById('section-week');
+
+  if (isWeekend) {
+    weekendBox.style.display = 'block';
+    sectionDay.style.display = 'none';
+    sectionWeek.style.display = 'none';
+    document.getElementById('phrase-text').textContent = randomFrase(FRASI.weekend);
+    return;
+  }
+
+  weekendBox.style.display = 'none';
+  sectionDay.style.display = 'block';
+  sectionWeek.style.display = 'block';
+
+  // ---- GIORNO ----
+  const minFattiOggi = minLavorativiGiorno(h, m);
+  const pctDay = Math.min(100, (minFattiOggi / MIN_GIORNO) * 100);
+  const outsideBox = document.getElementById('outside-box');
+  const dayContent = document.getElementById('day-content');
+
+  if (!isOrarioLavoro(h, m) && !inPausa(h, m)) {
+    if (h < 8) {
+      outsideBox.querySelector('p').textContent = '⏰ La giornata non è ancora iniziata. Caffè in mano.';
+    } else {
+      outsideBox.querySelector('p').textContent = '🏁 Hai finito per oggi. Sei libero. Vai.';
+    }
+    outsideBox.style.display = 'block';
+    dayContent.style.display = 'none';
+  } else {
+    outsideBox.style.display = 'none';
+    dayContent.style.display = 'block';
+    setPct('day-fill', 'day-pct-in', 'day-pct-out', pctDay);
+
+    let minMancanti;
+    if (inPausa(h, m)) {
+      minMancanti = (13 * 60 - (h * 60 + m)) + 4 * 60;
+    } else if (h * 60 + m < 12 * 60) {
+      minMancanti = (12 - h) * 60 - m + 4 * 60; // fino alle 12 + pomeriggio
+    } else {
+      minMancanti = 17 * 60 - (h * 60 + m);
+    }
+    document.getElementById('day-time-left').textContent = formatDurata(Math.max(0, minMancanti));
+  }
+
+  // ---- SETTIMANA ----
+  // Lun=1, Mar=2, Mer=3, Gio=4, Ven=5
+  const giorniPassati = dow - 1; // giorni interi completati prima di oggi
+  const minFattiSettimana = giorniPassati * MIN_GIORNO + minFattiOggi;
+  const pctWeek = Math.min(100, (minFattiSettimana / MIN_SETTIMANA) * 100);
+  setPct('week-fill', 'week-pct-in', 'week-pct-out', pctWeek);
+
+  // minuti mancanti alla fine della settimana
+  const minMancantiSettimana = MIN_SETTIMANA - minFattiSettimana;
+  document.getElementById('week-time-left').textContent = formatDurata(Math.max(0, minMancantiSettimana));
+
+  // ---- FRASE ----
+  let bucket;
+  const isFriday = dow === 5;
+  const totMin = h * 60 + m;
+  if (inPausa(h, m)) bucket = 'pausa';
+  else if (!isOrarioLavoro(h, m) && h < 8) bucket = 'before';
+  else if (!isOrarioLavoro(h, m) && h >= 17) bucket = 'after';
+  else if (isFriday && totMin >= 16 * 60 && totMin < 18 * 60) bucket = 'friday_afternoon';
+  else if (pctDay >= 100) bucket = 'done';
+  else if (pctDay < 25) bucket = 'low';
+  else if (pctDay < 50) bucket = 'mid';
+  else if (pctDay < 80) bucket = 'high';
+  else bucket = 'almost';
+
+  const musicLink = document.getElementById('music-link');
+  if (bucket === 'friday_afternoon') {
+    musicLink.style.display = 'inline-block';
+  } else {
+    musicLink.style.display = 'none';
+  }
+
+  if (bucket !== lastPhraseBucket) {
+    document.getElementById('phrase-text').textContent = randomFrase(FRASI[bucket]);
+    lastPhraseBucket = bucket;
+  }
+}
+
+update();
+setInterval(update, 1000);
+</script>
+</body>
+</html>

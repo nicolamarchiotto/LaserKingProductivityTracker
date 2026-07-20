@@ -1,407 +1,395 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Il Misuratore Ufficiale della Sopravvivenza Settimanale™ %</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GARISSIMO.COM — Tools by Garo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&display=swap');
 
-  <style>
-    /* --- Windows 95-ish vibe --- */
-    :root{
-      --win-bg: #c0c0c0;
-      --win-face: #c0c0c0;
-      --win-dark: #808080;
-      --win-darker:#404040;
-      --win-light:#ffffff;
-      --win-blue:#000080;
-      --text:#000;
-    }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { min-height: 100vh; }
 
-    html, body { height: 100%; }
-    body {
-      margin: 0;
-      background: var(--win-bg);
-      color: var(--text);
-      font-family: "MS Sans Serif", Tahoma, Verdana, Arial, sans-serif;
-      font-size: 14px;
-      -webkit-font-smoothing: none;
-      -moz-osx-font-smoothing: grayscale;
-    }
+body {
+  font-family: 'Space Mono', 'Courier New', monospace;
+  background-color: #f5f0e8;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(0,180,180,0.07) 28px, rgba(0,180,180,0.07) 29px),
+    repeating-linear-gradient(90deg, transparent, transparent 28px, rgba(0,180,180,0.07) 28px, rgba(0,180,180,0.07) 29px);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
 
-    .wrap { max-width: 760px; margin: 18px auto; padding: 0 12px; }
+/* ===== HEADER / NAVBAR ===== */
+.navbar {
+  background: #1a1a2e;
+  border-bottom: 4px solid #009b8d;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 56px;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+.navbar-logo {
+  font-family: 'VT323', monospace;
+  font-size: 28px;
+  color: #f5c518;
+  letter-spacing: 3px;
+  text-decoration: none;
+  text-transform: uppercase;
+}
+.navbar-logo span { color: #009b8d; }
+.navbar-tagline {
+  font-size: 10px;
+  color: #556;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
 
-    /* Window frame */
-    .window {
-      border: 2px solid var(--win-dark);
-      border-top-color: var(--win-light);
-      border-left-color: var(--win-light);
-      background: var(--win-face);
-      box-shadow: 1px 1px 0 #000;
-    }
+/* ===== HERO ===== */
+.hero {
+  background: #faf6ee;
+  border-bottom: 4px solid #1a1a2e;
+  padding: 60px 32px 50px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★';
+  position: absolute;
+  top: 12px;
+  left: 0; right: 0;
+  font-size: 10px;
+  color: rgba(245,197,24,0.25);
+  letter-spacing: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.hero::after {
+  content: '★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★ ★';
+  position: absolute;
+  bottom: 12px;
+  left: 0; right: 0;
+  font-size: 10px;
+  color: rgba(245,197,24,0.25);
+  letter-spacing: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.hero-eyebrow {
+  font-size: 11px;
+  color: #009b8d;
+  font-weight: 700;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 14px;
+}
+.hero-title {
+  font-family: 'VT323', monospace;
+  font-size: 80px;
+  color: #1a1a2e;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  line-height: 1;
+}
+.hero-title span { color: #e8452a; }
+.hero-sub {
+  font-size: 12px;
+  color: #666;
+  margin-top: 16px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+}
+.hero-badge {
+  display: inline-block;
+  margin-top: 20px;
+  background: #7b4fd4;
+  border: 2px solid #1a1a2e;
+  padding: 4px 14px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #faf6ee;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 #1a1a2e;
+}
 
-    .titlebar {
-      background: var(--win-blue);
-      color: #fff;
-      padding: 6px 8px;
-      display:flex;
-      align-items:center;
-      justify-content: space-between;
-      font-weight: 700;
-      letter-spacing: 0.2px;
-      user-select: none;
-    }
+/* ===== SHIMMER ===== */
+.shimmer-line {
+  height: 6px;
+  background: repeating-linear-gradient(90deg,
+    #009b8d 0px, #009b8d 12px,
+    #f5c518 12px, #f5c518 24px,
+    #e8452a 24px, #e8452a 36px,
+    #7b4fd4 36px, #7b4fd4 48px);
+  border: none;
+}
 
-    .titlebar .controls {
-      display:flex; gap:6px;
-    }
+/* ===== TOOLS GRID ===== */
+.tools-section {
+  flex: 1;
+  padding: 60px 32px;
+  max-width: 900px;
+  margin: 0 auto;
+  width: 100%;
+}
+.tools-section-title {
+  font-family: 'VT323', monospace;
+  font-size: 28px;
+  color: #1a1a2e;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.tools-section-title::before,
+.tools-section-title::after {
+  content: '';
+  flex: 1;
+  height: 3px;
+  background: #1a1a2e;
+}
 
-    .tb-btn{
-      width: 16px; height: 14px;
-      background: var(--win-face);
-      border: 2px solid var(--win-dark);
-      border-top-color: var(--win-light);
-      border-left-color: var(--win-light);
-      box-shadow: 1px 1px 0 #000;
-    }
+.tools-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px;
+}
 
-    .content { padding: 12px; }
+/* ===== TOOL CARD ===== */
+.tool-card {
+  background: #faf6ee;
+  border: 4px solid #1a1a2e;
+  box-shadow: 8px 8px 0 #1a1a2e;
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.08s, box-shadow 0.08s;
+  cursor: pointer;
+}
+.tool-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 11px 11px 0 #1a1a2e;
+}
+.tool-card:active {
+  transform: translate(4px, 4px);
+  box-shadow: 4px 4px 0 #1a1a2e;
+}
 
-    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:end; }
-    .spacer { flex: 1 1 auto; }
+.card-header {
+  padding: 18px 22px 14px;
+  border-bottom: 3px solid #1a1a2e;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.card-icon {
+  font-size: 36px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.card-title {
+  font-family: 'VT323', monospace;
+  font-size: 26px;
+  color: #1a1a2e;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  line-height: 1.1;
+}
+.card-version {
+  font-size: 10px;
+  color: #888;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-top: 3px;
+}
 
-    .label { font-size: 12px; margin-bottom: 4px; }
+.card-body {
+  padding: 16px 22px;
+  flex: 1;
+}
+.card-desc {
+  font-size: 11.5px;
+  color: #444;
+  line-height: 1.7;
+  letter-spacing: 0.3px;
+}
 
-    input {
-      padding: 6px 8px;
-      border: 2px solid var(--win-dark);
-      border-top-color: var(--win-darker);
-      border-left-color: var(--win-darker);
-      background: #fff;
-      border-radius: 0;
-      outline: none;
-      min-width: 110px;
-    }
+.card-footer {
+  padding: 14px 22px;
+  border-top: 2px solid #1a1a2e;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.card-tag {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  padding: 3px 8px;
+  border: 2px solid;
+}
+.card-cta {
+  font-family: 'VT323', monospace;
+  font-size: 18px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
 
-    /* Windows 95 button effect */
-    button {
-      padding: 7px 10px;
-      background: var(--win-face);
-      border: 2px solid var(--win-dark);
-      border-top-color: var(--win-light);
-      border-left-color: var(--win-light);
-      box-shadow: 1px 1px 0 #000;
-      cursor: pointer;
-      border-radius: 0;
-      font-family: inherit;
-    }
-    button:active{
-      border-top-color: var(--win-dark);
-      border-left-color: var(--win-dark);
-      border-bottom-color: var(--win-light);
-      border-right-color: var(--win-light);
-      box-shadow: none;
-      transform: translate(1px,1px);
-    }
+/* Card color variants */
+.card-teal .card-header { background: #eaf7f7; }
+.card-teal .card-tag { color: #006e64; border-color: #009b8d; background: #eaf7f7; }
+.card-teal .card-cta { color: #009b8d; }
+.card-teal .card-footer { background: #f4fcfc; }
 
-    .pill{
-      padding: 4px 8px;
-      background: #fff;
-      border: 2px solid var(--win-dark);
-      border-top-color: var(--win-darker);
-      border-left-color: var(--win-darker);
-      display:inline-block;
-      box-shadow: inset 1px 1px 0 #00000010;
-    }
+.card-coral .card-header { background: #fdf0ee; }
+.card-coral .card-tag { color: #a02010; border-color: #e8452a; background: #fdf0ee; }
+.card-coral .card-cta { color: #e8452a; }
+.card-coral .card-footer { background: #fef6f5; }
 
-    hr {
-      border: none;
-      height: 2px;
-      background: var(--win-dark);
-      box-shadow: 0 1px 0 var(--win-light);
-      margin: 12px 0;
-    }
+.card-yellow .card-header { background: #fff8e6; }
+.card-yellow .card-tag { color: #8a5a00; border-color: #f5c518; background: #fff8e6; }
+.card-yellow .card-cta { color: #c49000; }
+.card-yellow .card-footer { background: #fffdf0; }
 
-    h1 { margin: 0 0 10px; font-size: 18px; }
-    h3 { margin: 10px 0 6px; font-size: 14px; }
+.card-purple .card-header { background: #f0eefa; }
+.card-purple .card-tag { color: #4a2080; border-color: #7b4fd4; background: #f0eefa; }
+.card-purple .card-cta { color: #7b4fd4; }
+.card-purple .card-footer { background: #f7f4fd; }
 
-    .muted { color: #222; opacity: .8; }
+/* ===== COMING SOON CARD ===== */
+.tool-card.coming-soon {
+  opacity: 0.55;
+  cursor: not-allowed;
+  border-style: dashed;
+  box-shadow: 4px 4px 0 #bbb;
+}
+.tool-card.coming-soon:hover {
+  transform: none;
+  box-shadow: 4px 4px 0 #bbb;
+}
+.coming-soon-badge {
+  display: inline-block;
+  background: #bbb;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 8px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  border: 2px solid #999;
+}
 
-    /* Progress bars (chunky) */
-    .bar {
-      height: 18px;
-      background: #fff;
-      border: 2px solid var(--win-dark);
-      border-top-color: var(--win-darker);
-      border-left-color: var(--win-darker);
-      overflow: hidden;
-    }
-    .fill {
-      height: 100%;
-      width: 0%;
-      background: #0a7a0a; /* classic green */
-      transition: width .4s ease;
-    }
-    .fill.week { background: #0a7a0a; }
-    .fill.day  { background: #7a0a0a; } /* reddish, retro alert vibe */
+/* ===== FOOTER ===== */
+.site-footer {
+  background: #1a1a2e;
+  border-top: 4px solid #009b8d;
+  padding: 24px 32px;
+  text-align: center;
+}
+.site-footer .credits {
+  font-size: 12px;
+  color: #009b8d;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.site-footer .credits b { color: #f5c518; }
+.site-footer .meta {
+  font-size: 10px;
+  color: #445;
+  margin-top: 6px;
+  letter-spacing: 1px;
+}
 
-    /* Weekend-near background */
-    body.weekend-soon { background: #fff8dc; }
-
-    /* Boss mode */
-    body.boss .meme,
-    body.boss .goliardico,
-    body.boss .hide-in-boss {
-      display: none !important;
-    }
-    body.boss .titlebar {
-      background: #0b3d91;
-    }
-    body.boss .titlebar .titletext::after{
-      content: "  •  KPI Dashboard";
-      font-weight: 400;
-      opacity: 0.9;
-    }
-  </style>
+@media (max-width: 600px) {
+  .hero-title { font-size: 52px; }
+  .tools-grid { grid-template-columns: 1fr; }
+  .navbar { padding: 0 16px; }
+  .tools-section { padding: 40px 16px; }
+}
+</style>
 </head>
-
 <body>
-  <div class="wrap">
-    <div class="window">
-      <div class="titlebar">
-        <div class="titletext">WorkWeek Meter 95</div>
-        <div class="controls" aria-hidden="true">
-          <div class="tb-btn"></div>
-          <div class="tb-btn"></div>
-          <div class="tb-btn"></div>
+
+<!-- Navbar -->
+<nav class="navbar">
+  <a class="navbar-logo" href="#">GARISSIMO<span>.COM</span></a>
+  <span class="navbar-tagline">Tools by Garo · Est. 2026</span>
+</nav>
+
+<!-- Hero -->
+<div class="hero">
+  <div class="hero-eyebrow">// benvenuto nel laboratorio //</div>
+  <div class="hero-title">GARISSIMO<span>.</span>COM</div>
+  <div class="hero-sub">Tools artigianali per sopravvivere al lavoro e non solo</div>
+  <span class="hero-badge">⚡ 2 tools disponibili · altri in arrivo</span>
+</div>
+
+<div class="shimmer-line"></div>
+
+<!-- Tools -->
+<div class="tools-section">
+  <div class="tools-section-title">// I TOOLS //</div>
+
+  <div class="tools-grid">
+
+    <!-- PrintCost -->
+    <a class="tool-card card-teal" href="print_cost.html">
+      <div class="card-header">
+        <span class="card-icon">🖨️</span>
+        <div>
+          <div class="card-title">PrintCost</div>
+          <div class="card-version">Stampa 3D · v3.0</div>
         </div>
       </div>
-
-      <div class="content">
-        <div class="row" style="margin-bottom:8px;">
-          <h1 class="hide-in-boss">📊 Il Misuratore Ufficiale della Sopravvivenza Settimanale™</h1>
-          <div class="spacer"></div>
-          <span class="pill" id="now">Ora: --:--</span>
-        </div>
-
-        <div class="row">
-          <div>
-            <div class="label">Inizio lavoro</div>
-            <input id="start" type="time" value="09:00">
-          </div>
-          <div>
-            <div class="label">Fine lavoro</div>
-            <input id="end" type="time" value="18:00">
-          </div>
-          <div>
-            <div class="label">Pausa (min)</div>
-            <input id="break" type="number" value="60" min="0" step="5">
-          </div>
-
-          <div style="display:flex; gap:8px;">
-            <button id="save">Salva</button>
-            <button id="boss">Boss Mode</button>
-          </div>
-        </div>
-
-        <hr>
-
-        <h3>Settimana</h3>
-        <div class="bar"><div class="fill week" id="weekFill"></div></div>
-        <div class="row" style="justify-content:space-between; margin-top:8px;">
-          <span class="pill" id="weekPct">0%</span>
-          <span class="muted" id="toWeekend">…</span>
-        </div>
-
-        <h3>Giornata</h3>
-        <div class="bar"><div class="fill day" id="dayFill"></div></div>
-        <div class="row" style="justify-content:space-between; margin-top:8px;">
-          <span class="pill" id="dayPct">0%</span>
-          <span class="muted" id="dayMsg">…</span>
-        </div>
-
-        <hr class="hide-in-boss">
-
-        <div class="meme goliardico" style="font-weight:700; font-size:16px;" id="meme">🙂</div>
-        <div class="muted" id="status"></div>
+      <div class="card-body">
+        <p class="card-desc">Calcola il costo preciso di ogni stampa 3D: materiale, ammortamento macchina, corrente, ricarico e IVA. Con catalogo Bambu Lab e filamenti integrato.</p>
       </div>
-    </div>
+      <div class="card-footer card-teal">
+        <span class="card-tag">Produzione</span>
+        <span class="card-cta">Apri tool →</span>
+      </div>
+    </a>
+
+    <!-- Survival Meter -->
+    <a class="tool-card card-coral" href="survival_meter.html">
+      <div class="card-header">
+        <span class="card-icon">📊</span>
+        <div>
+          <div class="card-title">Weekly Survival Meter</div>
+          <div class="card-version">Sopravvivenza · v1.0</div>
+        </div>
+      </div>
+      <div class="card-body">
+        <p class="card-desc">Quanto manca alla fine della giornata? E della settimana? Barre di avanzamento in tempo reale, frasi motivazionali e colonna sonora del venerdì.</p>
+      </div>
+      <div class="card-footer card-coral">
+        <span class="card-tag">Sopravvivenza</span>
+        <span class="card-cta">Apri tool →</span>
+      </div>
+    </a>
+
   </div>
+</div>
 
-<script>
-  // --- helpers ---
-  const pad = n => String(n).padStart(2,'0');
+<div class="shimmer-line"></div>
 
-  const msToHM = (ms) => {
-    ms = Math.max(0, ms);
-    const m = Math.floor(ms / 60000);
-    const h = Math.floor(m / 60);
-    const mm = m % 60;
-    return `${h}h ${mm}m`;
-  };
+<!-- Footer -->
+<footer class="site-footer">
+  <div class="credits">Fatto con ❤️ da <b>Garo</b> con <b>Claude</b> 🤖✨</div>
+  <div class="meta">GARISSIMO.COM · Tools artigianali · 2026</div>
+</footer>
 
-  function parseTimeToMinutes(t) {
-    const [h,m] = t.split(':').map(Number);
-    return h*60 + m;
-  }
-
-  function loadSettings() {
-    const s = JSON.parse(localStorage.getItem('workweekSettings') || '{}');
-    if (s.start) document.getElementById('start').value = s.start;
-    if (s.end) document.getElementById('end').value = s.end;
-    if (s.breakMin != null) document.getElementById('break').value = s.breakMin;
-    if (s.bossMode) document.body.classList.toggle('boss', !!s.bossMode);
-  }
-
-  function saveSettings() {
-    const start = document.getElementById('start').value;
-    const end = document.getElementById('end').value;
-    const breakMin = Number(document.getElementById('break').value || 0);
-    const bossMode = document.body.classList.contains('boss');
-    localStorage.setItem('workweekSettings', JSON.stringify({ start, end, breakMin, bossMode }));
-  }
-
-  function memeFor(p) {
-    if (p >= 100) return "🏖️ WEEKEND MODE: LEGGENDA";
-    if (p >= 90) return "🎉 QUASI! Non mollare adesso";
-    if (p >= 75) return "😤 Resistenza attiva";
-    if (p >= 50) return "🙂 Metà strada. Ancora respiri.";
-    if (p >= 25) return "🥲 È lunga, ma ce la fai";
-    return "🫠 Inizio settimana: perché.";
-  }
-
-  function workMinutesElapsedToday(nowMin, startMin, endMin, breakMin) {
-    if (nowMin <= startMin) return 0;
-    const shiftLen = endMin - startMin;
-    if (shiftLen <= 0) return 0;
-
-    // Break assumed centered in the shift (simple + robust)
-    const breakStart = startMin + Math.floor(shiftLen/2) - Math.floor(breakMin/2);
-    const breakEnd = breakStart + breakMin;
-
-    if (nowMin >= endMin) return Math.max(0, shiftLen - breakMin);
-
-    const elapsedSinceStart = nowMin - startMin;
-
-    let breakElapsed = 0;
-    if (nowMin <= breakStart) breakElapsed = 0;
-    else if (nowMin >= breakEnd) breakElapsed = breakMin;
-    else breakElapsed = nowMin - breakStart;
-
-    return Math.max(0, elapsedSinceStart - breakElapsed);
-  }
-
-  function tick() {
-    const now = new Date();
-    const day = now.getDay(); // 0=Sun ... 6=Sat
-    const hh = pad(now.getHours()), mm = pad(now.getMinutes());
-    document.getElementById('now').textContent = `Ora: ${hh}:${mm}`;
-
-    // Settings
-    const startMin = parseTimeToMinutes(document.getElementById('start').value);
-    const endMin   = parseTimeToMinutes(document.getElementById('end').value);
-    const breakMin = Number(document.getElementById('break').value || 0);
-
-    const workDayMin = Math.max(0, (endMin - startMin) - breakMin);
-    const workWeekMin = workDayMin * 5;
-
-    const isWeekend = (day === 0 || day === 6);
-    const nowMin = now.getHours()*60 + now.getMinutes();
-
-    // --- Week progress: Mon-Fri only ---
-    let completedWeekMin = 0;
-
-    for (let d = 1; d <= 5; d++) { // Mon..Fri
-      if (day > d) {
-        completedWeekMin += workDayMin;
-      } else if (day === d) {
-        const within = Math.min(workDayMin, workMinutesElapsedToday(nowMin, startMin, endMin, breakMin));
-        completedWeekMin += within;
-      }
-    }
-
-    const weekPct = (workWeekMin === 0) ? 0 : (isWeekend ? 100 : (completedWeekMin / workWeekMin) * 100);
-    const weekPctClamped = Math.max(0, Math.min(100, weekPct));
-
-    // --- (1) Dynamic tab title ---
-    document.title = `${weekPctClamped.toFixed(1)}% settimana - Resistiamo`;
-
-    // --- (2) “Weekend soon” background when basically done ---
-    document.body.classList.toggle('weekend-soon', weekPctClamped >= 99 && weekPctClamped < 100);
-
-    document.getElementById('weekFill').style.width = `${weekPctClamped.toFixed(1)}%`;
-    document.getElementById('weekPct').textContent = `${weekPctClamped.toFixed(1)}%`;
-
-    // Time to weekend (Friday end)
-    let toWeekendMs = 0;
-    if (!isWeekend) {
-      const fri = new Date(now);
-      const deltaToFri = 5 - day; // Fri=5
-      fri.setDate(fri.getDate() + deltaToFri);
-
-      const [endH, endM] = document.getElementById('end').value.split(':').map(Number);
-      fri.setHours(endH, endM, 0, 0);
-
-      toWeekendMs = fri - now;
-    }
-    document.getElementById('toWeekend').textContent = isWeekend
-      ? "Weekend già in corso 😎"
-      : `Al weekend: ${msToHM(toWeekendMs)}`;
-
-    // --- Day progress ---
-    let dayCompleted = 0;
-    let dayState = "";
-
-    if (isWeekend || day < 1 || day > 5) {
-      dayCompleted = workDayMin;
-      dayState = "Oggi è weekend (o non lavorativo).";
-    } else if (nowMin <= startMin) {
-      dayCompleted = 0;
-      dayState = "Ancora non hai iniziato (o fai finta).";
-    } else if (nowMin >= endMin) {
-      dayCompleted = workDayMin;
-      dayState = "Giornata finita. Se qualcuno ti cerca: eri in riunione.";
-    } else {
-      dayCompleted = Math.min(workDayMin, workMinutesElapsedToday(nowMin, startMin, endMin, breakMin));
-
-      // Basic pause detection (same centered-break model)
-      const shiftLen = endMin - startMin;
-      const breakStart = startMin + Math.floor(shiftLen/2) - Math.floor(breakMin/2);
-      const breakEnd = breakStart + breakMin;
-
-      if (breakMin > 0 && nowMin >= breakStart && nowMin < breakEnd) dayState = "Pausa. Non farti vedere online.";
-      else dayState = "Operativo. O quantomeno presente.";
-    }
-
-    const dayPct = (workDayMin === 0) ? 0 : (dayCompleted / workDayMin) * 100;
-    const dayPctClamped = Math.max(0, Math.min(100, dayPct));
-
-    document.getElementById('dayFill').style.width = `${dayPctClamped.toFixed(1)}%`;
-    document.getElementById('dayPct').textContent = `${dayPctClamped.toFixed(1)}%`;
-    document.getElementById('dayMsg').textContent = dayState;
-
-    // Meme/status
-    document.getElementById('meme').textContent = memeFor(weekPctClamped);
-    document.getElementById('status').textContent =
-      `Minuti settimana completati: ${Math.round(completedWeekMin)} / ${Math.round(workWeekMin)}.`;
-  }
-
-  // init
-  loadSettings();
-
-  document.getElementById('save').addEventListener('click', () => {
-    saveSettings();
-    tick();
-  });
-
-  // --- (3) Boss mode toggle ---
-  document.getElementById('boss').addEventListener('click', () => {
-    document.body.classList.toggle('boss');
-    saveSettings();
-    tick();
-  });
-
-  tick();
-  setInterval(tick, 10000);
-</script>
 </body>
 </html>

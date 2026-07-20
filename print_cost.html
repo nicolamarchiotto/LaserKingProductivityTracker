@@ -1,0 +1,968 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PrintCost · Stampa 3D</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=VT323&family=Space+Mono:wght@400;700&display=swap');
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body { min-height: 100vh; }
+
+body {
+  font-family: 'Space Mono', 'Courier New', monospace;
+  background-color: #f5f0e8;
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 28px, rgba(0,180,180,0.07) 28px, rgba(0,180,180,0.07) 29px),
+    repeating-linear-gradient(90deg, transparent, transparent 28px, rgba(0,180,180,0.07) 28px, rgba(0,180,180,0.07) 29px);
+  padding: 32px 16px;
+}
+
+.container {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ===== Main panel ===== */
+.glass-panel {
+  background: #faf6ee;
+  border: 4px solid #1a1a2e;
+  border-radius: 0;
+  box-shadow: 8px 8px 0 #1a1a2e;
+  overflow: visible;
+}
+
+/* ===== Title bar ===== */
+.xp-titlebar {
+  background: #009b8d;
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 4px solid #1a1a2e;
+}
+.xp-titlebar .xp-title {
+  color: #faf6ee;
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+.xp-dots { display: flex; gap: 8px; }
+.xp-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 0;
+  border: 2px solid #1a1a2e;
+}
+.xp-dot.red    { background: #e8452a; }
+.xp-dot.yellow { background: #f5c518; }
+.xp-dot.green  { background: #2ecc71; }
+
+/* ===== Header ===== */
+.header {
+  padding: 24px 28px 20px;
+  background: #faf6ee;
+  border-bottom: 4px solid #1a1a2e;
+  position: relative;
+  overflow: hidden;
+}
+.header::before {
+  content: '◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆ ◆';
+  position: absolute;
+  bottom: 8px;
+  left: 0;
+  right: 0;
+  font-size: 9px;
+  color: rgba(0,155,141,0.25);
+  letter-spacing: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.header-text h1 {
+  font-family: 'VT323', monospace;
+  font-size: 38px;
+  font-weight: 400;
+  color: #1a1a2e;
+  letter-spacing: 2px;
+  line-height: 1.1;
+  text-transform: uppercase;
+}
+.header-text .tagline {
+  font-size: 11px;
+  color: #009b8d;
+  margin-top: 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+.version-badge {
+  display: inline-block;
+  margin-top: 10px;
+  background: #e8452a;
+  border: 2px solid #1a1a2e;
+  border-radius: 0;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  color: #faf6ee;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow: 3px 3px 0 #1a1a2e;
+}
+
+/* ===== Sections ===== */
+.section {
+  padding: 22px 28px;
+  border-bottom: 3px solid #1a1a2e;
+  position: relative;
+}
+.section:last-of-type { border-bottom: none; }
+
+.section-title {
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.section-title .dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 0;
+  border: 2px solid #1a1a2e;
+  flex-shrink: 0;
+}
+
+/* Section color themes — 90s palette */
+.sec-blue   { background: #eaf7f7; }
+.sec-blue   .section-title { color: #006e64; }
+.sec-blue   .section-title .dot { background: #009b8d; }
+
+.sec-green  { background: #fff8e6; }
+.sec-green  .section-title { color: #8a5a00; }
+.sec-green  .section-title .dot { background: #f5c518; }
+
+.sec-orange { background: #fdf0ee; }
+.sec-orange .section-title { color: #a02010; }
+.sec-orange .section-title .dot { background: #e8452a; }
+
+.sec-pink   { background: #f0eefa; }
+.sec-pink   .section-title { color: #4a2080; }
+.sec-pink   .section-title .dot { background: #7b4fd4; }
+
+/* Form grid */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 20px;
+}
+.form-grid.three { grid-template-columns: 1fr 1fr 1fr; }
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.field.full { grid-column: 1 / -1; }
+
+label {
+  font-size: 11px;
+  font-weight: 700;
+  color: #1a1a2e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+input[type="number"], input[type="text"], select {
+  background: #fff;
+  border: 2px solid #1a1a2e;
+  border-radius: 0;
+  padding: 8px 10px;
+  font-size: 14px;
+  font-family: 'Space Mono', monospace;
+  color: #1a1a2e;
+  outline: none;
+  width: 100%;
+  box-shadow: 3px 3px 0 #1a1a2e;
+  transition: box-shadow 0.1s, transform 0.1s;
+}
+select { cursor: pointer; }
+input:focus, select:focus {
+  box-shadow: 3px 3px 0 #009b8d;
+  border-color: #009b8d;
+  transform: translate(-1px, -1px);
+}
+
+.unit {
+  font-size: 10px;
+  color: #666;
+  margin-top: 2px;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+}
+
+.value-display {
+  padding: 8px 10px;
+  font-size: 14px;
+  font-weight: 700;
+  font-family: 'Space Mono', monospace;
+  color: #1a1a2e;
+  background: #e8f7f6;
+  border: 2px solid #1a1a2e;
+  box-shadow: 3px 3px 0 #1a1a2e;
+}
+
+/* Buttons */
+.btn-calc {
+  width: 100%;
+  padding: 14px;
+  font-family: 'VT323', monospace;
+  font-size: 22px;
+  font-weight: 400;
+  color: #faf6ee;
+  background: #009b8d;
+  border: 3px solid #1a1a2e;
+  border-radius: 0;
+  cursor: pointer;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  box-shadow: 5px 5px 0 #1a1a2e;
+  transition: all 0.08s;
+}
+.btn-calc:hover {
+  background: #00b5a5;
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 #1a1a2e;
+}
+.btn-calc:active {
+  transform: translate(3px, 3px);
+  box-shadow: 2px 2px 0 #1a1a2e;
+}
+
+.btn-reset {
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  font-weight: 400;
+  color: #faf6ee;
+  background: #e8452a;
+  border: 3px solid #1a1a2e;
+  border-radius: 0;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow: 5px 5px 0 #1a1a2e;
+  transition: all 0.08s;
+}
+.btn-reset:hover {
+  background: #f05a3d;
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 #1a1a2e;
+}
+.btn-reset:active {
+  transform: translate(3px, 3px);
+  box-shadow: 2px 2px 0 #1a1a2e;
+}
+
+.btn-copia {
+  width: 100%;
+  margin-top: 14px;
+  padding: 11px;
+  font-family: 'VT323', monospace;
+  font-size: 20px;
+  font-weight: 400;
+  color: #1a1a2e;
+  background: #f5c518;
+  border: 3px solid #1a1a2e;
+  border-radius: 0;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow: 5px 5px 0 #1a1a2e;
+  transition: all 0.08s;
+}
+.btn-copia:hover {
+  background: #ffd62e;
+  transform: translate(-2px, -2px);
+  box-shadow: 7px 7px 0 #1a1a2e;
+}
+.btn-copia:active {
+  transform: translate(3px, 3px);
+  box-shadow: 2px 2px 0 #1a1a2e;
+}
+
+.copia-feedback {
+  display: none;
+  text-align: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: #006e64;
+  margin-top: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.copia-feedback.visible { display: block; }
+
+.field input.campo-errore {
+  border-color: #e8452a !important;
+  box-shadow: 3px 3px 0 #e8452a !important;
+}
+
+/* Advanced toggle */
+.btn-avanzate {
+  margin-top: 16px;
+  background: transparent;
+  border: 2px dashed #009b8d;
+  border-radius: 0;
+  padding: 9px 14px;
+  font-family: 'Space Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #009b8d;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  width: 100%;
+  text-align: left;
+  transition: background 0.1s;
+}
+.btn-avanzate:hover { background: rgba(0,155,141,0.08); }
+#avanzate-arrow {
+  display: inline-block;
+  transition: transform 0.2s;
+  font-size: 11px;
+}
+#avanzate-panel {
+  margin-top: 14px;
+  padding: 16px;
+  background: rgba(0,155,141,0.06);
+  border: 2px solid #009b8d;
+}
+.avanzate-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #009b8d;
+}
+
+/* Results panel */
+.results-panel {
+  background: #fff;
+  border: 3px solid #1a1a2e;
+  padding: 20px 22px;
+  margin-top: 20px;
+  display: none;
+  box-shadow: 5px 5px 0 #1a1a2e;
+}
+.results-panel.visible { display: block; }
+
+.result-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 9px 0;
+  border-bottom: 1px dashed #ccc;
+  font-size: 13px;
+}
+.result-row:last-child { border-bottom: none; }
+.result-label { color: #444; font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+.result-value { font-weight: 700; color: #1a1a2e; font-size: 14px; font-family: 'Space Mono', monospace; }
+
+.result-row.highlight {
+  background: #fff8e6;
+  border: 2px solid #f5c518;
+  margin: 6px -10px;
+  padding: 8px 10px;
+  border-bottom: 2px solid #f5c518;
+}
+.result-row.highlight .result-label { color: #8a5a00; }
+.result-row.highlight .result-value { color: #8a5a00; font-size: 16px; }
+
+.result-row.piatto {
+  background: #f0eefa;
+  border: 2px solid #7b4fd4;
+  margin: 6px -10px;
+  padding: 8px 10px;
+  border-bottom: 2px solid #7b4fd4;
+}
+.result-row.piatto .result-label { color: #4a2080; }
+.result-row.piatto .result-value { color: #4a2080; font-size: 16px; }
+
+.result-row.final {
+  background: #009b8d;
+  border: 3px solid #1a1a2e;
+  margin: 10px -10px 0;
+  padding: 14px 10px;
+  border-bottom: 3px solid #1a1a2e !important;
+  box-shadow: 4px 4px 0 #1a1a2e;
+}
+.result-row.final .result-label { color: #faf6ee !important; font-size: 13px; }
+.result-row.final .result-value { font-size: 26px; color: #faf6ee; }
+
+.error-msg {
+  background: #fdf0ee;
+  border: 2px solid #e8452a;
+  color: #a02010;
+  padding: 10px 14px;
+  font-size: 12px;
+  margin-top: 12px;
+  display: none;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.error-msg.visible { display: block; }
+
+.shimmer-line {
+  height: 4px;
+  background: repeating-linear-gradient(90deg, #009b8d 0px, #009b8d 12px, #f5c518 12px, #f5c518 24px, #e8452a 24px, #e8452a 36px, #7b4fd4 36px, #7b4fd4 48px);
+  border: none;
+  margin: 0;
+}
+
+/* Footer */
+.footer-bar {
+  background: #1a1a2e;
+  padding: 14px 28px;
+  text-align: center;
+  border-top: 4px solid #1a1a2e;
+}
+.footer-bar .credits {
+  font-size: 12px;
+  color: #009b8d;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.footer-bar .credits b { color: #f5c518; }
+.footer-bar .meta {
+  font-size: 10px;
+  color: #556;
+  margin-top: 4px;
+  letter-spacing: 1px;
+}
+
+.footer-outer {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 10px;
+  color: #999;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="glass-panel">
+
+    <!-- XP Titlebar -->
+    <div class="xp-titlebar">
+      <span class="xp-title">🖥️ PrintCost · Stampa 3D</span>
+      <div class="xp-dots">
+        <span class="xp-dot yellow"></span>
+        <span class="xp-dot green"></span>
+        <span class="xp-dot red"></span>
+      </div>
+    </div>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="header-text">
+        <h1>PrintCost · Stampa 3D</h1>
+        <p class="tagline">Calcola il costo delle tue stampe in pochi secondi</p>
+        <span class="version-badge">✨ v3.0 — 02/07/2026</span>
+      </div>
+    </div>
+
+    <hr class="shimmer-line">
+
+    <!-- Materiale -->
+    <div class="section sec-blue">
+      <div class="section-title"><span class="dot"></span>Materiale</div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="grammi">Quantità materiale</label>
+          <input type="number" id="grammi" placeholder="es. 20" min="0" step="0.1">
+          <span class="unit">grammi (gr)</span>
+        </div>
+        <div class="field">
+          <label for="materiale">Filamento</label>
+          <select id="materiale" onchange="selezionaMateriale(this.value)">
+            <option value="">— Seleziona filamento —</option>
+            <optgroup label="Bambu Lab">
+              <option value="12">Bambu Lab PLA — €12</option>
+              <option value="43">Bambu Lab TPU 85A — €43</option>
+            </optgroup>
+            <optgroup label="eSUN">
+              <option value="27.99">eSUN PLA-CF — €27,99</option>
+              <option value="16">eSUN PLA Basic — €16</option>
+            </optgroup>
+            <optgroup label="PolyLite">
+              <option value="34">PolyLite ASA — €34</option>
+            </optgroup>
+            <optgroup label="Azurefilm">
+              <option value="15.9">Azurefilm PETG Hyperspeed — €15,90</option>
+              <option value="34.9">Azurefilm ASA — €34,90</option>
+            </optgroup>
+            <optgroup label="Personalizzato">
+              <option value="custom">Prezzo personalizzato…</option>
+            </optgroup>
+          </select>
+          <span class="unit">prezzi per bobina da 1 kg</span>
+        </div>
+        <div class="field" id="wrap-bobina-custom" style="display:none">
+          <label for="prezzo-bobina">Prezzo personalizzato</label>
+          <input type="number" id="prezzo-bobina" placeholder="es. 25" min="0" step="0.01">
+          <span class="unit">€ per kg (1000 gr)</span>
+        </div>
+        <div class="field" id="wrap-bobina-display" style="display:none">
+          <label>Prezzo selezionato</label>
+          <div id="bobina-display" class="value-display">—</div>
+          <span class="unit">€ per kg (1000 gr)</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Tempo & quantità -->
+    <div class="section sec-green">
+      <div class="section-title"><span class="dot"></span>Tempo di stampa &amp; quantità</div>
+      <div class="form-grid three">
+        <div class="field">
+          <label for="ore">Ore</label>
+          <input type="number" id="ore" placeholder="es. 1" min="0" step="1" value="0">
+          <span class="unit">ore</span>
+        </div>
+        <div class="field">
+          <label for="minuti">Minuti</label>
+          <input type="number" id="minuti" placeholder="es. 40" min="0" max="59" step="1" value="0">
+          <span class="unit">minuti</span>
+        </div>
+        <div class="field">
+          <label for="n-pezzi">N. pezzi per piatto</label>
+          <input type="number" id="n-pezzi" placeholder="es. 1" min="1" step="1" value="1">
+          <span class="unit">pezzi per piatto</span>
+        </div>
+        <div class="field">
+          <label for="n-piatti">N. piatti</label>
+          <input type="number" id="n-piatti" placeholder="es. 1" min="1" step="1" value="1">
+          <span class="unit">numero piatti totali</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Macchina -->
+    <div class="section sec-orange">
+      <div class="section-title"><span class="dot"></span>Macchina &amp; Ricarico</div>
+      <div class="form-grid">
+        <div class="field full">
+          <label for="modello-macchina">Modello stampante</label>
+          <select id="modello-macchina" onchange="selezionaMacchina(this.value)">
+            <option value="">— Seleziona modello —</option>
+            <option value="249">A1 Mini Combo — €249</option>
+            <option value="369">A1 Combo — €369</option>
+            <option value="799">P2S Combo — €799</option>
+            <option value="1349">X1 Carbon Combo — €1.349</option>
+            <option value="1949">H2D Combo — €1.949</option>
+            <option value="custom">Prezzo personalizzato…</option>
+          </select>
+          <span class="unit">prezzi ufficiali store EU Bambu Lab (listino 2026)</span>
+        </div>
+        <div class="field" id="wrap-prezzo-custom" style="display:none">
+          <label for="prezzo-macchina">Prezzo personalizzato</label>
+          <input type="number" id="prezzo-macchina" placeholder="es. 2000" min="0" step="1" value="">
+          <span class="unit">€ (valore acquisto)</span>
+        </div>
+        <div class="field" id="wrap-prezzo-display" style="display:none">
+          <label>Prezzo selezionato</label>
+          <div id="prezzo-display" class="value-display">—</div>
+          <span class="unit">€ (valore acquisto)</span>
+        </div>
+        <div class="field">
+          <label for="rincaro">Ricarico</label>
+          <input type="number" id="rincaro" placeholder="es. 100" min="0" step="1" value="100">
+          <span class="unit">% sul costo base</span>
+        </div>
+      </div>
+
+      <!-- Avanzate toggle -->
+      <button class="btn-avanzate" onclick="toggleAvanzate()" id="btn-avanzate">
+        <span id="avanzate-arrow">▸</span> Impostazioni avanzate
+      </button>
+
+      <div id="avanzate-panel" style="display:none">
+        <div class="avanzate-label">Ammortamento macchina</div>
+        <div class="form-grid" style="margin-top:10px">
+          <div class="field">
+            <label for="anni-ammort">Anni di ammortamento</label>
+            <input type="number" id="anni-ammort" placeholder="es. 3" min="1" max="20" step="1" value="3" oninput="aggiornaTotaleOre()">
+            <span class="unit">anni di utilizzo previsti</span>
+          </div>
+          <div class="field">
+            <label for="giorni-anno">Giorni lavorativi / anno</label>
+            <input type="number" id="giorni-anno" placeholder="es. 250" min="1" max="365" step="1" value="250" oninput="aggiornaTotaleOre()">
+            <span class="unit">es. 250 = lun-ven, senza ferie</span>
+          </div>
+          <div class="field">
+            <label for="ore-giorno">Ore di stampa / giorno</label>
+            <input type="number" id="ore-giorno" placeholder="es. 4" min="0.5" max="24" step="0.5" value="4" oninput="aggiornaTotaleOre()">
+            <span class="unit">ore/giorno di utilizzo medio</span>
+          </div>
+          <div class="field">
+            <label>Ore totali stimate</label>
+            <div id="ore-totali-display" class="value-display">3.000 ore</div>
+            <span class="unit">= anni × giorni × ore/giorno</span>
+          </div>
+        </div>
+        <div class="avanzate-label" style="margin-top:14px">Costi energetici</div>
+        <div class="form-grid" style="margin-top:10px">
+          <div class="field">
+            <label for="corrente">Costo corrente</label>
+            <input type="number" id="corrente" placeholder="es. 0.5" min="0" step="0.01" value="0.50">
+            <span class="unit">€ per ora di stampa</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IVA e calcola -->
+    <div class="section sec-pink">
+      <div class="section-title"><span class="dot"></span>IVA &amp; Calcolo</div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="iva">IVA</label>
+          <input type="number" id="iva" placeholder="es. 22" min="0" step="1" value="22">
+          <span class="unit">%</span>
+        </div>
+        <div class="field">
+          <label for="arrotonda">Arrotonda prezzo finale</label>
+          <select id="arrotonda">
+            <option value="0">Nessun arrotondamento</option>
+            <option value="0.5">A 0,50 €</option>
+            <option value="1">A 1 €</option>
+          </select>
+          <span class="unit">taglio "pulito" per il cliente</span>
+        </div>
+      </div>
+      <div style="margin-top: 18px; display:flex; gap:10px;">
+        <button class="btn-calc" onclick="calcola()" style="flex:2;">⚙ Calcola Preventivo</button>
+        <button class="btn-reset" onclick="resetForm()" style="flex:1;">↺ Reset</button>
+      </div>
+      <div class="error-msg" id="error-msg">Compila tutti i campi obbligatori (grammi, prezzo bobina, tempo di stampa).</div>
+
+      <!-- Risultati -->
+      <div class="results-panel" id="results">
+        <div class="result-row">
+          <span class="result-label">Costo materiale</span>
+          <span class="result-value" id="r-materiale">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">Ammortamento macchina</span>
+          <span class="result-value" id="r-ammort">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">Costo corrente</span>
+          <span class="result-value" id="r-corrente">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">Costo base (per piatto)</span>
+          <span class="result-value" id="r-base">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">Ricarico</span>
+          <span class="result-value" id="r-rincaro">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">Imponibile</span>
+          <span class="result-value" id="r-imponibile">—</span>
+        </div>
+        <div class="result-row">
+          <span class="result-label">IVA</span>
+          <span class="result-value" id="r-iva">—</span>
+        </div>
+        <div class="result-row highlight">
+          <span class="result-label">💶 Prezzo per piatto (IVA incl.)</span>
+          <span class="result-value" id="r-finale-piatto">—</span>
+        </div>
+        <div class="result-row" id="row-pezzo" style="display:none">
+          <span class="result-label">Costo per singolo pezzo</span>
+          <span class="result-value" id="r-pezzo">—</span>
+        </div>
+        <div class="result-row piatto" id="row-piatti" style="display:none">
+          <span class="result-label">📋 N. piatti</span>
+          <span class="result-value" id="r-n-piatti">—</span>
+        </div>
+        <div class="result-row final">
+          <span class="result-label" style="font-weight:700;color:#0d6e22;font-size:15px;">🏆 Totale preventivo (tutti i piatti)</span>
+          <span class="result-value" id="r-finale-totale">—</span>
+        </div>
+        <div class="field" style="margin-bottom:10px;">
+          <label for="nota-preventivo">Note / Cliente <span style="font-weight:400;color:#8a90a8">(opzionale)</span></label>
+          <input type="text" id="nota-preventivo" placeholder="es. Mario Rossi — Cover smartphone">
+        </div>
+        <button class="btn-copia" onclick="copiaPreventivo()" id="btn-copia">📋 Copia preventivo per il cliente</button>
+        <div class="copia-feedback" id="copia-feedback">✓ Copiato negli appunti!</div>
+        <textarea id="testo-copia" readonly onclick="this.select()" style="display:none;margin-top:12px;width:100%;min-height:160px;padding:10px 12px;font-family:inherit;font-size:12.5px;color:#1a3a6a;background:rgba(255,255,255,0.9);border:1.5px solid rgba(80,140,210,0.5);border-radius:9px;resize:vertical;line-height:1.6;"></textarea>
+      </div>
+    </div>
+
+    <!-- Footer / Crediti -->
+    <div class="footer-bar">
+      <div class="credits">Scritto da <b>Garo</b> con <b>Claude</b> 🤖✨</div>
+      <div class="meta">PrintCost · Stampa 3D · v3.0 · 02/07/2026</div>
+    </div>
+
+  </div>
+  <div class="footer-outer">PrintCost · Stampa 3D</div>
+</div>
+
+<script>
+function fmt(n) {
+  return '€ ' + n.toFixed(2).replace('.', ',');
+}
+
+function toggleAvanzate() {
+  const panel = document.getElementById('avanzate-panel');
+  const arrow = document.getElementById('avanzate-arrow');
+  const open = panel.style.display === 'none';
+  panel.style.display = open ? 'block' : 'none';
+  arrow.style.transform = open ? 'rotate(90deg)' : 'rotate(0deg)';
+}
+
+function aggiornaTotaleOre() {
+  const anni = parseFloat(document.getElementById('anni-ammort').value) || 0;
+  const giorni = parseFloat(document.getElementById('giorni-anno').value) || 0;
+  const ore = parseFloat(document.getElementById('ore-giorno').value) || 0;
+  const tot = anni * giorni * ore;
+  const el = document.getElementById('ore-totali-display');
+  el.textContent = tot > 0 ? tot.toLocaleString('it-IT') + ' ore' : '— ore';
+}
+
+function selezionaMateriale(val) {
+  const wrapCustom = document.getElementById('wrap-bobina-custom');
+  const wrapDisplay = document.getElementById('wrap-bobina-display');
+  const display = document.getElementById('bobina-display');
+
+  if (val === 'custom') {
+    wrapCustom.style.display = 'flex';
+    wrapDisplay.style.display = 'none';
+    document.getElementById('prezzo-bobina').value = '';
+    document.getElementById('prezzo-bobina').focus();
+  } else if (val !== '') {
+    wrapCustom.style.display = 'none';
+    wrapDisplay.style.display = 'flex';
+    display.textContent = '€ ' + parseFloat(val).toLocaleString('it-IT', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+  } else {
+    wrapCustom.style.display = 'none';
+    wrapDisplay.style.display = 'none';
+  }
+}
+
+function getPrezzoMateriale() {
+  const sel = document.getElementById('materiale').value;
+  if (sel === 'custom') return parseFloat(document.getElementById('prezzo-bobina').value) || 0;
+  return parseFloat(sel) || 0;
+}
+
+function selezionaMacchina(val) {
+  const wrapCustom = document.getElementById('wrap-prezzo-custom');
+  const wrapDisplay = document.getElementById('wrap-prezzo-display');
+  const inputCustom = document.getElementById('prezzo-macchina');
+  const display = document.getElementById('prezzo-display');
+
+  if (val === 'custom') {
+    wrapCustom.style.display = 'flex';
+    wrapDisplay.style.display = 'none';
+    inputCustom.value = '';
+    inputCustom.focus();
+  } else if (val !== '') {
+    wrapCustom.style.display = 'none';
+    wrapDisplay.style.display = 'flex';
+    display.textContent = '€ ' + parseInt(val).toLocaleString('it-IT');
+  } else {
+    wrapCustom.style.display = 'none';
+    wrapDisplay.style.display = 'none';
+  }
+}
+
+function getPrezzoMacchina() {
+  const sel = document.getElementById('modello-macchina').value;
+  if (sel === 'custom') {
+    return parseFloat(document.getElementById('prezzo-macchina').value) || 0;
+  }
+  return parseFloat(sel) || 0;
+}
+
+// ===== Stato =====
+
+function oggiFormattato() {
+  const d = new Date();
+  return d.toLocaleDateString('it-IT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+}
+
+function pulisciErrori() {
+  ['grammi', 'prezzo-bobina', 'ore', 'minuti'].forEach(id => {
+    document.getElementById(id).classList.remove('campo-errore');
+  });
+  document.getElementById('error-msg').classList.remove('visible');
+}
+
+function segnalaErrore(ids, messaggio) {
+  ids.forEach(id => document.getElementById(id).classList.add('campo-errore'));
+  const errEl = document.getElementById('error-msg');
+  errEl.textContent = messaggio;
+  errEl.classList.add('visible');
+}
+
+function calcola() {
+  pulisciErrori();
+
+  const grammi = parseFloat(document.getElementById('grammi').value);
+  const prezzoBobina = getPrezzoMateriale();
+  const ore = parseFloat(document.getElementById('ore').value) || 0;
+  const minuti = parseFloat(document.getElementById('minuti').value) || 0;
+  const nPezzi = parseInt(document.getElementById('n-pezzi').value) || 1;
+  const nPiatti = parseInt(document.getElementById('n-piatti').value) || 1;
+  const prezzoMacchina = getPrezzoMacchina() || 2000;
+  const anniAmmort = parseFloat(document.getElementById('anni-ammort').value) || 3;
+  const giorniAnno = parseFloat(document.getElementById('giorni-anno').value) || 250;
+  const oreGiorno = parseFloat(document.getElementById('ore-giorno').value) || 4;
+  const oreAmmort = anniAmmort * giorniAnno * oreGiorno;
+  const corrente = parseFloat(document.getElementById('corrente').value) || 0.5;
+  const rincaro = parseFloat(document.getElementById('rincaro').value) || 0;
+  const iva = parseFloat(document.getElementById('iva').value) || 0;
+  const arrotonda = parseFloat(document.getElementById('arrotonda').value) || 0;
+
+  // Validazione campo per campo
+  const campiErrore = [];
+  if (isNaN(grammi) || grammi <= 0) campiErrore.push('grammi');
+  if (isNaN(prezzoBobina) || prezzoBobina <= 0) campiErrore.push('prezzo-bobina');
+  if (ore === 0 && minuti === 0) { campiErrore.push('ore'); campiErrore.push('minuti'); }
+
+  if (campiErrore.length > 0) {
+    segnalaErrore(campiErrore, 'Controlla i campi evidenziati in rosso: sono obbligatori per calcolare il preventivo.');
+    document.getElementById('results').classList.remove('visible');
+    return;
+  }
+
+  const tempoH = ore + minuti / 60;
+  const ammortH = oreAmmort > 0 ? prezzoMacchina / oreAmmort : 0;
+
+  const costoMateriale = grammi * (prezzoBobina / 1000);
+  const costoAmmort = tempoH * ammortH;
+  const costoCorrente = tempoH * corrente;
+  const costoBase = costoMateriale + costoAmmort + costoCorrente;
+
+  const valoreRincaro = costoBase * (rincaro / 100);
+  const imponibile = costoBase + valoreRincaro;
+  const valoreIva = imponibile * (iva / 100);
+  let prezzoFinalePerPiatto = imponibile + valoreIva;
+
+  if (arrotonda > 0) {
+    prezzoFinalePerPiatto = Math.ceil(prezzoFinalePerPiatto / arrotonda) * arrotonda;
+  }
+  const prezzoTotale = prezzoFinalePerPiatto * nPiatti;
+
+  document.getElementById('r-materiale').textContent = fmt(costoMateriale);
+  document.getElementById('r-ammort').textContent = fmt(costoAmmort) + '  (€ ' + ammortH.toFixed(4).replace('.',',') + '/h)';
+  document.getElementById('r-corrente').textContent = fmt(costoCorrente);
+  document.getElementById('r-base').textContent = fmt(costoBase);
+  document.getElementById('r-rincaro').textContent = fmt(valoreRincaro);
+  document.getElementById('r-imponibile').textContent = fmt(imponibile);
+  document.getElementById('r-iva').textContent = fmt(valoreIva);
+  document.getElementById('r-finale-piatto').textContent = fmt(prezzoFinalePerPiatto);
+  document.getElementById('r-finale-totale').textContent = fmt(prezzoTotale);
+
+  const rowPezzo = document.getElementById('row-pezzo');
+  let prezzoPerPezzo = null;
+  if (nPezzi > 1) {
+    prezzoPerPezzo = prezzoTotale / (nPezzi * nPiatti);
+    document.getElementById('r-pezzo').textContent = fmt(prezzoPerPezzo);
+    rowPezzo.style.display = 'flex';
+  } else {
+    rowPezzo.style.display = 'none';
+  }
+
+  const rowPiatti = document.getElementById('row-piatti');
+  if (nPiatti > 1) {
+    document.getElementById('r-n-piatti').textContent = nPiatti + ' piatti';
+    rowPiatti.style.display = 'flex';
+  } else {
+    rowPiatti.style.display = 'none';
+  }
+
+  document.getElementById('results').classList.add('visible');
+}
+
+function resetForm() {
+  document.querySelectorAll('input[type="number"], input[type="text"]').forEach(el => {
+    if (el.id === 'ore-giorno') { el.value = '4'; return; }
+    if (el.id === 'anni-ammort') { el.value = '3'; return; }
+    if (el.id === 'giorni-anno') { el.value = '250'; return; }
+    if (el.id === 'corrente') { el.value = '0.50'; return; }
+    if (el.id === 'rincaro') { el.value = '100'; return; }
+    if (el.id === 'iva') { el.value = '22'; return; }
+    if (el.id === 'n-pezzi' || el.id === 'n-piatti') { el.value = '1'; return; }
+    if (el.id === 'ore' || el.id === 'minuti') { el.value = '0'; return; }
+    el.value = '';
+  });
+  document.getElementById('modello-macchina').value = '';
+  document.getElementById('arrotonda').value = '0';
+  selezionaMacchina('');
+  pulisciErrori();
+  document.getElementById('results').classList.remove('visible');
+  document.getElementById('copia-feedback').classList.remove('visible');
+  document.getElementById('testo-copia').style.display = 'none';
+  document.getElementById('testo-copia').value = '';
+  document.getElementById('nota-preventivo').value = '';
+}
+
+function copiaPreventivo() {
+  const costoBase = document.getElementById('r-base').textContent;
+  const ricarico = document.getElementById('r-rincaro').textContent;
+  const prezzoPiatto = document.getElementById('r-finale-piatto').textContent;
+  const prezzoTotale = document.getElementById('r-finale-totale').textContent;
+  const nPiatti = parseInt(document.getElementById('n-piatti').value) || 1;
+  const nPezzi = parseInt(document.getElementById('n-pezzi').value) || 1;
+  const rowPezzoVisibile = document.getElementById('row-pezzo').style.display !== 'none';
+  const prezzoPezzo = rowPezzoVisibile ? document.getElementById('r-pezzo').textContent : null;
+
+  const nota = document.getElementById('nota-preventivo').value.trim();
+  let testo = `PREVENTIVO STAMPA 3D\n${oggiFormattato()}\n`;
+  if (nota) testo += `${nota}\n`;
+  testo += `\n`;
+  testo += `Costo base (per piatto): ${costoBase}\n`;
+  testo += `Ricarico: ${ricarico}\n`;
+  testo += `Prezzo per piatto (IVA incl.): ${prezzoPiatto}\n`;
+  if (prezzoPezzo) testo += `Costo per singolo pezzo: ${prezzoPezzo}\n`;
+  if (nPiatti > 1) testo += `N. piatti: ${nPiatti}\n`;
+  testo += `\nTOTALE PREVENTIVO (tutti i piatti): ${prezzoTotale}\n`;
+  testo += `(IVA inclusa)\n\n— PrintCost · Stampa 3D`;
+
+  const ta = document.getElementById('testo-copia');
+  ta.value = testo;
+  ta.style.display = 'block';
+  ta.select();
+
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(testo).then(() => {
+      const fb = document.getElementById('copia-feedback');
+      fb.classList.add('visible');
+      setTimeout(() => fb.classList.remove('visible'), 2500);
+    }).catch(() => {});
+  }
+}
+
+document.querySelectorAll('input').forEach(el => {
+  el.addEventListener('keydown', e => { if (e.key === 'Enter') calcola(); });
+  el.addEventListener('input', () => el.classList.remove('campo-errore'));
+});
+</script>
+</body>
+</html>
